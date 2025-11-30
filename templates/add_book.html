@@ -14,7 +14,11 @@
       <p style="color: red;">{{ success_message }}</p>
     {% endif %}
   {% endif %}
-
+  <br>
+  <form action="{{ url_for('home') }}" method="GET">
+        <button type="submit">Home</button>
+    </form>
+  <br><br>
   <form action="/add_book" method="POST">
   <label for="title">Title:</label>
   <input type="text" id="title" name="title" required><br><br>
