@@ -1,5 +1,6 @@
-from flask import Flask, render_template, redirect, request, url_for, session
-from flask_sqlalchemy import SQLAlchemy
+from pyexpat.errors import messages
+
+from flask import Flask, render_template, request, redirect, url_for
 import os
 from data_models import db, Author, Book
 from datetime import datetime
@@ -76,8 +77,10 @@ def add_book():
 @app.route('/home')
 def home():
     books = Book.query.all()
+    message = request.args.get('message')
 
     sort_option = request.args.get('sort')
+    search_query = request.args.get('query')
 
     if sort_option == 'author_asc':
         books = sorted(books, key=lambda b: b.author.name.split()[-1])
@@ -87,9 +90,29 @@ def home():
         books = db.session.query(Book).order_by(Book.title.asc()).all()
     elif sort_option == 'book_name_desc':
         books = db.session.query(Book).order_by(Book.title.desc()).all()
+    if search_query:
+        books = db.session.query(Book) \
+            .filter(Book.title.ilike(f"%{search_query}%")) \
+            .all()
+
+    return render_template('home.html', books=books, message=message)
 
 
-    return render_template('home.html', books=books)
+@app.route('/book/<int:book_id>/delete', methods=['POST'])
+def delete(book_id):
+    book = db.session.get(Book, book_id)
+    if not book:
+        return redirect(url_for('home', message="Error: Book not found!"))
+
+    author = book.author
+    db.session.delete(book)
+    db.session.commit()
+
+    if len(author.books) == 0:
+        db.session.delete(author)
+        db.session.commit()
+
+    return redirect(url_for('home', message="Book successfully deleted!"))
 
 
 """

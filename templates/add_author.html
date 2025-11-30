@@ -8,7 +8,11 @@
   <body>
 
   {% if success_message %}
-    <p style="color: green;">{{ success_message }}</p>
+    {% if success_message.startswith('A') %}
+      <p style="color: green;">{{ success_message }}</p>
+    {% else %}
+      <p style="color: red;">{{ success_message }}</p>
+    {% endif %}
   {% endif %}
 
   <form action="/add_author" method="POST">

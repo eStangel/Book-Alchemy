@@ -6,14 +6,35 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
   </head>
   <body>
+    {% if message %}
+    {% if message.startswith('B') %}
+      <p style="color: green;">{{ message }}</p>
+    {% else %}
+      <p style="color: red;">{{ message }}</p>
+    {% endif %}
+    {% endif %}
     <a href="{{ url_for('home', sort='author_asc') }}">Sort by Author (A–Z)</a>
     <a href="{{ url_for('home', sort='author_desc') }}">Sort by Author (Z–A)</a>
     <a href="{{ url_for('home', sort='book_name_asc') }}">Sort by Book Name (A–Z)</a>
     <a href="{{ url_for('home', sort='book_name_desc') }}">Sort by Book Name (Z–A)</a>
-    {% for book in books %}
-    <div> <h3>{{ book.title }}<i> by {{ book.author.name }}</i></h3>
-    </div>
-    {% endfor %}
+    <br>
+    <form action="/home" method="GET">
+        <input type="text" name="query" size="30" placeholder="Search for books by title...">
+        <input type="submit" value="Search">
+    </form>
+    <br>
+    {% if books %}
+        {% for book in books %}
+            <div> <h3>{{ book.title }}<i> by {{ book.author.name }}</i></h3>
+                <form action="{{ url_for('delete', book_id=book.id) }}" method="POST">
+                    <button type="submit" class="delete-button">Delete</button>
+                </form>
+            </div>
+            <br>
+        {% endfor %}
+    {% else %}
+         <h3>There are no book titles that match your search criteria!</h3>
+    {% endif %}
 
   </body>
 </html>
