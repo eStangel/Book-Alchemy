@@ -1,9 +1,8 @@
-from pyexpat.errors import messages
-
 from flask import Flask, render_template, request, redirect, url_for
 import os
 from data_models import db, Author, Book
 from datetime import datetime
+from sqlalchemy.exc import SQLAlchemyError
 
 app = Flask(__name__)
 
@@ -20,23 +19,31 @@ def add_author():
         author_name = request.form.get('name')
         birth_date_str = request.form.get('birthdate')
         date_of_death_str = request.form.get('date_of_death')
-
-        birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d").date()
-        date_of_death = (
-            datetime.strptime(date_of_death_str, "%Y-%m-%d").date()
-            if date_of_death_str else None
-        )
-
-        if author_name and birth_date and date_of_death:
-            new_author = Author(
-                name = author_name,
-                birth_date = birth_date,
-                date_of_death = date_of_death
+        try:
+            birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d").date()
+            date_of_death = (
+                datetime.strptime(date_of_death_str, "%Y-%m-%d").date()
+                if date_of_death_str else None
             )
-            db.session.add(new_author)
-            db.session.commit()
+        except (ValueError, TypeError):
+            return render_template(
+                'add_author.html',
+                success_message="Error: Invalid date format!"
+            )
 
-            success_message = f"Author '{author_name}' added successfully!"
+        if author_name and birth_date:
+            try:
+                new_author = Author(
+                    name=author_name,
+                    birth_date=birth_date,
+                    date_of_death=date_of_death
+                )
+                db.session.add(new_author)
+                db.session.commit()
+                success_message = f"Author '{author_name}' added successfully!"
+            except SQLAlchemyError:
+                db.session.rollback()
+                success_message = "Error: Database write failed!"
         else:
             success_message = "Error: Fill out all fields!"
 
@@ -58,16 +65,19 @@ def add_book():
         author_id = request.form.get('author_id')
 
         if title and isbn and publication_year and author_id:
-            new_book = Book(
-                title = title,
-                isbn = isbn,
-                publication_year = publication_year,
-                author_id = author_id
-            )
-            db.session.add(new_book)
-            db.session.commit()
-
-            success_message = f"Book '{title}' added successfully!"
+            try:
+                new_book = Book(
+                    title=title,
+                    isbn=isbn,
+                    publication_year=publication_year,
+                    author_id=author_id
+                )
+                db.session.add(new_book)
+                db.session.commit()
+                success_message = f"Book '{title}' added successfully!"
+            except SQLAlchemyError:
+                db.session.rollback()
+                success_message = "Error: Database write failed!"
         else:
             success_message = "Error: Fill out all fields!"
 
@@ -108,15 +118,19 @@ def delete(book_id):
     if not book:
         return redirect(url_for('home', message="Error: Book not found!"))
 
-    author = book.author
-    db.session.delete(book)
-    db.session.commit()
-
-    if len(author.books) == 0:
-        db.session.delete(author)
+    try:
+        author = book.author
+        db.session.delete(book)
         db.session.commit()
 
-    return redirect(url_for('home', message="Book successfully deleted!"))
+        if len(author.books) == 0:
+            db.session.delete(author)
+            db.session.commit()
+
+        return redirect(url_for('home', message="Book successfully deleted!"))
+    except SQLAlchemyError:
+        db.session.rollback()
+        return redirect(url_for('home', message="Error: Database operation failed!"))
 
 
 @app.route('/author/<int:author_id>/delete', methods=['POST'])
@@ -126,11 +140,15 @@ def delete_author(author_id):
     if not author:
         return redirect(url_for('home', message="Error: Author not found!"))
 
-    for book in list(author.books):
-        db.session.delete(book)
-    db.session.delete(author)
-    db.session.commit()
-    return redirect(url_for('home', message="Author and all associated books deleted!"))
+    try:
+        for book in list(author.books):
+            db.session.delete(book)
+        db.session.delete(author)
+        db.session.commit()
+        return redirect(url_for('home', message="Author and all associated books deleted!"))
+    except SQLAlchemyError:
+        db.session.rollback()
+        return redirect(url_for('home', message="Error: Database operation failed!"))
 
 
 @app.route('/book/<int:book_id>/details')
