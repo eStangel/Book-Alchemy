@@ -115,6 +115,25 @@ def delete(book_id):
     return redirect(url_for('home', message="Book successfully deleted!"))
 
 
+@app.route('/author/<int:author_id>/delete', methods=['POST'])
+def delete_author(author_id):
+    author = db.session.get(Author, author_id)
+    if not author:
+        return redirect(url_for('home', message="Error: Author not found!"))
+
+    for book in list(author.books):
+        db.session.delete(book)
+    db.session.delete(author)
+    db.session.commit()
+    return redirect(url_for('home', message="Author and all associated books deleted!"))
+
+
+@app.route('/book/<int:book_id>/details')
+def details(book_id):
+    book = db.session.get(Book, book_id)
+    return render_template('book_details.html', book=book)
+
+
 """
 # Only run once to create the tables
 with app.app_context():

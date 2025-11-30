@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  </head>
+  <body>
+  <form action="{{ url_for('home') }}" method="GET">
+        <button type="submit">Home</button>
+    </form>
+  <br><br>
+  <h1>{{ book.title }}</h1>
+  <h2><i>by {{book.author.name}}</i></h2>
+  <h4>Year of publication: {{ book.publication_year }}</h4>
+  <h4>ISBN: {{ book.isbn }}</h4>
+  </body>
+</html>

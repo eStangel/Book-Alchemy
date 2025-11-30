@@ -7,10 +7,10 @@
   </head>
   <body>
     {% if message %}
-    {% if message.startswith('B') %}
-      <p style="color: green;">{{ message }}</p>
-    {% else %}
+    {% if message.startswith('E') %}
       <p style="color: red;">{{ message }}</p>
+    {% else %}
+      <p style="color: green;">{{ message }}</p>
     {% endif %}
     {% endif %}
     <br>
@@ -34,8 +34,14 @@
     {% if books %}
         {% for book in books %}
             <div> <h3>{{ book.title }}<i> by {{ book.author.name }}</i></h3>
+                <form action="{{ url_for('details', book_id=book.id) }}" method="GET">
+                    <button type="submit">Details</button>
+                </form>
                 <form action="{{ url_for('delete', book_id=book.id) }}" method="POST">
                     <button type="submit" class="delete-button">Delete</button>
+                </form>
+                <form action="{{ url_for('delete_author', author_id=book.author.id) }}" method="POST">
+                    <button type="submit">Delete Author and all their books</button>
                 </form>
             </div>
             <br>
