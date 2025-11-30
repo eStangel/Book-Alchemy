@@ -5,6 +5,8 @@ from sqlalchemy.orm import relationship
 db = SQLAlchemy()
 
 class Author(db.Model):
+    """Represents an author with name and birth/death dates."""
+
     __tablename__ = 'authors'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -13,6 +15,7 @@ class Author(db.Model):
     date_of_death = Column(Date)
 
     def __repr__(self):
+        """Returns a detailed string representation of the author."""
         return (
             f"<Author id={self.id}, "
             f"name='{self.name}', "
@@ -21,10 +24,13 @@ class Author(db.Model):
         )
 
     def __str__(self):
+        """Returns a user-friendly string of the author's name and years."""
         return f"{self.name} ({self.birth_date}–{self.date_of_death})"
 
 
 class Book(db.Model):
+    """Represents a book with title, ISBN, year, and author relation."""
+
     __tablename__ = 'books'
 
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -36,6 +42,7 @@ class Book(db.Model):
 
 
     def __repr__(self):
+        """Returns a detailed string representation of the book."""
         return (
             f"<Book id={self.id}, title='{self.title}', "
             f"isbn='{self.isbn}', publication_year={self.publication_year}, "
@@ -43,4 +50,5 @@ class Book(db.Model):
         )
 
     def __str__(self):
+        """Returns a user-friendly string of the book's title and year."""
         return f"'{self.title}' ({self.publication_year})"

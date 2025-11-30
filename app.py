@@ -15,6 +15,7 @@ db.init_app(app)
 
 @app.route('/add_author', methods=['GET','POST'])
 def add_author():
+    """Handles adding a new author via a form."""
     if request.method == 'POST':
         author_name = request.form.get('name')
         birth_date_str = request.form.get('birthdate')
@@ -46,6 +47,7 @@ def add_author():
 
 @app.route('/add_book', methods=['GET', 'POST'])
 def add_book():
+    """Handles adding a new book via a form."""
     # Fetch all authors from database
     authors = Author.query.order_by(Author.name).all()
 
@@ -76,6 +78,7 @@ def add_book():
 
 @app.route('/home')
 def home():
+    """Displays all books, with optional sorting and search functionality."""
     books = Book.query.all()
     message = request.args.get('message')
 
@@ -100,6 +103,7 @@ def home():
 
 @app.route('/book/<int:book_id>/delete', methods=['POST'])
 def delete(book_id):
+    """Deletes a book and its author if no other books exist for them."""
     book = db.session.get(Book, book_id)
     if not book:
         return redirect(url_for('home', message="Error: Book not found!"))
@@ -117,6 +121,7 @@ def delete(book_id):
 
 @app.route('/author/<int:author_id>/delete', methods=['POST'])
 def delete_author(author_id):
+    """Deletes an author and all associated books."""
     author = db.session.get(Author, author_id)
     if not author:
         return redirect(url_for('home', message="Error: Author not found!"))
@@ -130,6 +135,7 @@ def delete_author(author_id):
 
 @app.route('/book/<int:book_id>/details')
 def details(book_id):
+    """Displays detailed information for a specific book."""
     book = db.session.get(Book, book_id)
     return render_template('book_details.html', book=book)
 
