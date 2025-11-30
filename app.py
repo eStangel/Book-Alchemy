@@ -2,6 +2,7 @@ from flask import Flask, render_template, redirect, request, url_for, session
 from flask_sqlalchemy import SQLAlchemy
 import os
 from data_models import db, Author, Book
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -15,8 +16,15 @@ db.init_app(app)
 def add_author():
     if request.method == 'POST':
         author_name = request.form.get('name')
-        birth_date = request.form.get('birthdate')
-        date_of_death = request.form.get('date_of_death')
+        birth_date_str = request.form.get('birthdate')
+        date_of_death_str = request.form.get('date_of_death')
+
+        birth_date = datetime.strptime(birth_date_str, "%Y-%m-%d").date()
+        date_of_death = (
+            datetime.strptime(date_of_death_str, "%Y-%m-%d").date()
+            if date_of_death_str else None
+        )
+
         if author_name and birth_date and date_of_death:
             new_author = Author(
                 name = author_name,
@@ -68,6 +76,19 @@ def add_book():
 @app.route('/home')
 def home():
     books = Book.query.all()
+
+    sort_option = request.args.get('sort')
+
+    if sort_option == 'author_asc':
+        books = sorted(books, key=lambda b: b.author.name.split()[-1])
+    elif sort_option == 'author_desc':
+        books = sorted(books, key=lambda b: b.author.name.split()[-1], reverse=True)
+    elif sort_option == 'book_name_asc':
+        books = db.session.query(Book).order_by(Book.title.asc()).all()
+    elif sort_option == 'book_name_desc':
+        books = db.session.query(Book).order_by(Book.title.desc()).all()
+
+
     return render_template('home.html', books=books)
 
 

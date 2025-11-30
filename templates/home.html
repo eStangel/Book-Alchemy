@@ -6,9 +6,12 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
   </head>
   <body>
-
+    <a href="{{ url_for('home', sort='author_asc') }}">Sort by Author (A–Z)</a>
+    <a href="{{ url_for('home', sort='author_desc') }}">Sort by Author (Z–A)</a>
+    <a href="{{ url_for('home', sort='book_name_asc') }}">Sort by Book Name (A–Z)</a>
+    <a href="{{ url_for('home', sort='book_name_desc') }}">Sort by Book Name (Z–A)</a>
     {% for book in books %}
-    <div> <h3>{{ book.title }}</h3>
+    <div> <h3>{{ book.title }}<i> by {{ book.author.name }}</i></h3>
     </div>
     {% endfor %}
 
